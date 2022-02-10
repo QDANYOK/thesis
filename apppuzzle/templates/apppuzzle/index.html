@@ -1,0 +1,21 @@
+{% extends 'apppuzzle/base.html' %}
+{% load static %}
+
+{% block content %}
+<body onload="init();">
+<center>
+	<div class="header">
+		<h1>Puzzle Game</h1>
+	</div>
+  <br><div><img width="250px" src="https://picsum.photos/600/600/?random"></div><br>
+  <input type="submit" value="Puzzlify"><br><br>
+    <div class="puzzleFrame">
+      <canvas id="myCanvas"></canvas>
+      <div class="drop-zone"></div>
+    </div>
+
+  </center>
+    <script src="{% static 'js/script1.js' %}"></script>
+</body>
+{% endblock %}
+

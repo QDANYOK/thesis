@@ -1,0 +1,10 @@
+{% extends 'apppuzzle/base.html' %}
+{% load static %}
+    {% block content %}<head>
+        <h1>New game</h1>
+    <form action="{% url 'pu:new' %}" method="POST" class="post-form">{% csrf_token %}
+        <p>{{ puzzle.as_p }}</p>
+        <button type="submit" class="">Yeah</button>
+    </form>
+        <br><br>
+{% endblock %}
