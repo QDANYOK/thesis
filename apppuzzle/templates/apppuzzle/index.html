@@ -7,9 +7,13 @@
 	<div class="header">
 		<h1>Puzzle Game</h1>
 	</div>
-  <br><div><img width="250px" src="https://picsum.photos/600/600/?random"></div><br>
+  <br><div><img width="250px" src="{{ imj_.image.url }}"></div><br>
   <input type="submit" value="Puzzlify"><br><br>
     <div class="puzzleFrame">
+      {% if img_obj %}
+  <h3>Succesfully uploaded : {{img_obj.title}}</h3>
+  <img src="{{ img_obj.image.url}}" alt="connect" style="max-height:300px">
+{% endif %}
       <canvas id="myCanvas"></canvas>
       <div class="drop-zone"></div>
     </div>

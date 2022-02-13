@@ -1,24 +1,24 @@
 from django.shortcuts import render, redirect
 from django.views import generic
 
-from .forms import PuzzleForm
+from .forms import ImageForm
 from .models import Puzzle
 
 
 class PuzzleView(generic.ListView):
-    template_name = 'apppuzzle/puzzles.html'
+    template_name = 'apppuzzle/index.html'
     context_object_name = 'puzzle'
 
-    def get_queryset(self):
-        return PuzzleForm
 
-
-def post_new(request):
-    if request.method == "POST":
-        form = PuzzleForm(request.POST)
+def image_upload_view(request):
+    """Process images uploaded by users"""
+    if request.method == 'POST':
+        form = ImageForm(request.POST, request.FILES)
         if form.is_valid():
             form.save()
-            return redirect('apppuzzle/index.html')
+            # Get the current instance object to display in the template
+            img_obj = form.instance
+            return render(request, 'apppuzzle/puzzles.html', {'form': form, 'img_obj': img_obj})
     else:
-        form = PuzzleForm()
-    return render(request, 'apppuzzle/index.html', {'form': form})
+        form = ImageForm()
+    return render(request, 'apppuzzle/puzzles.html', {'form': form})

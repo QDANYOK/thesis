@@ -1,112 +1,68 @@
-document.querySelector("#rand").addEventListener("click",function(){
-	createWord(String.fromCharCode(1040+getRand(0,33)));
-},false);
-createWord("У");
+function getMask(tileRatio, topTab, rightTab, bottomTab, leftTab, tileWidth) {
 
-function createWord(word){
-	[...document.body.children].forEach(e=>{
-  if(e.id != "rand")
-  		document.body.removeChild(e);
-  });
-  var canvas = document.createElement("canvas");
-  document.body.appendChild(canvas);
-  var ctx = canvas.getContext("2d");
-  var ctxW = 500;
-  var ctxH = 300;
-  canvas.width = ctxW;
-  canvas.height = ctxH
-  var text = word;
-  ctx.font = "200px Impact";
-  var textHeight = 160;//Высота текста
-  var textWidth = ctx.measureText(text).width;
-  var x = 150,y = 200;//Координаты буквы
-  ctx.fillText(text,x,y);
-  var imageParts = [];
-  var countCropY =3;//на сколько частей резать по вертикали
-  var countCropX =3;//на сколько частей резать по горизонтали
-  var heightCrop = textHeight/countCropY;
-  var widthCrop = textWidth/countCropX;
-  for(var i = 0; i < countCropY;i++){	
-    for(var j = 0; j < countCropX;j++){	
-      imageParts.push(new imagePart(x+widthCrop*j,y-textHeight+heightCrop*i,getRand(0,ctxW-textWidth),getRand(0,ctxH-textHeight),widthCrop,heightCrop,
-      ctx.getImageData(x+widthCrop*j,y-textHeight+heightCrop*i,widthCrop,heightCrop)))
-    	}
-  }
-  function draw(){
-    ctx.clearRect(0,0,ctxW,ctxH);
-    ctx.strokeText(text,x,y);
-    imageParts.forEach(e=>e.draw())
-  }
-  draw();
-  var drag = null,offX = 0,offY = 0;
-  canvas.addEventListener("mousedown",function(e){
-    imageParts.forEach(el=>{
-     if(el.collision({x:e.offsetX,y:e.offsetY})){
-       drag = el;
-       offX = el.x- e.offsetX;
-       offY = el.y - e.offsetY;
-     return false;
-     }
-    });
-  },false);
-  document.addEventListener("mouseup",function(e){
-    if(drag != null){
-      drag.positionHelper();
-      draw();
-      if(imageParts.every(e=>e.x == e.startX && e.y == e.startY)){    	
-        ctx.fillText(text,x,y);
-        alert("Буква собрана!");
-      }
-    }
-    drag = null;
-  });
-  canvas.addEventListener("mousemove",function(e){
-  if(drag != null){
-    canvas.style.cursor = "move";
-    drag.x = e.offsetX+offX;
-    drag.y = e.offsetY+offY;
-    draw();
-  }
-  else{
-    canvas.style.cursor = "default";
-      imageParts.forEach(el=>{
-       if(el.collision({x:e.offsetX,y:e.offsetY})){
-          canvas.style.cursor = "pointer";
-         return false;
-       }
-      });
-    }
-  },false);
-  function imagePart(sx,sy,x,y,w,h,data){
-    let _this = this;
-    this.x = x;
-    this.y = y;
-    this.startX = sx;
-    this.startY = sy;
-    this.h = h;
-    this.w = w;
-    this.data = data;
-    this.distToHelp = 15;
-    this.draw = function(){//Рисовать часть
-      ctx.putImageData(_this.data,_this.x,_this.y);
-    }
-    this.collision = function(point){//Проверить точка входит в часть
-    return  point.x   >= _this.x && point.x <= _this.x+_this.w &&  point.y   >= _this.y && point.y <= _this.y+_this.h; 
-    }
-    this.positionHelper = function(){//Если близко к начально точке то устанавливает позицию начальной точки
-      if(getDist(_this.x,_this.y,_this.startX,_this.startY) <= _this.distToHelp ){
+    var curvyCoords = [
+            0, 0, 35, 15, 37, 5,
+            37, 5, 40, 0, 38, -5,
+            38, -5, 20, -20, 50, -20,
+            50, -20, 80, -20, 62, -5,
+            62, -5, 60, 0, 63, 5,
+            63, 5, 65, 15, 100, 0
+    ];
 
-      _this.x = _this.startX;
-      _this.y = _this.startY;
-      }
-    }
-  }
-}
+    var mask = new Path();
+    var tileCenter = view.center;
 
-function getRand(min,max){
-return Math.round(Math.random() * (max-min) + min);
-}
-///Получить растояние между двумя точками
-function getDist(x, y, x1, y1) {
-  return Math.hypot(x - x1, y - y1);
+    var topLeftEdge = new Point(-4,4);
+
+    mask.moveTo(topLeftEdge);
+
+    //Top
+    for (var i = 0; i < curvyCoords.length / 6; i++) {
+        var p1 = topLeftEdge + new Point(curvyCoords[i * 6 + 0] * tileRatio,
+        topTab * curvyCoords[i * 6 + 1] * tileRatio);
+        var p2 = topLeftEdge + new Point(curvyCoords[i * 6 + 2] * tileRatio,
+        topTab * curvyCoords[i * 6 + 3] * tileRatio);
+        var p3 = topLeftEdge + new Point(curvyCoords[i * 6 + 4] * tileRatio,
+        topTab * curvyCoords[i * 6 + 5] * tileRatio);
+
+        mask.cubicCurveTo(p1, p2, p3);
+    }
+    //Right
+    var topRightEdge = topLeftEdge + new Point(tileWidth, 0);
+    for (var i = 0; i < curvyCoords.length / 6; i++) {
+        var p1 = topRightEdge + new Point(-rightTab * curvyCoords[i * 6 + 1] * tileRatio,
+        curvyCoords[i * 6 + 0] * tileRatio);
+        var p2 = topRightEdge + new Point(-rightTab * curvyCoords[i * 6 + 3] * tileRatio,
+        curvyCoords[i * 6 + 2] * tileRatio);
+        var p3 = topRightEdge + new Point(-rightTab * curvyCoords[i * 6 + 5] * tileRatio,
+        curvyCoords[i * 6 + 4] * tileRatio);
+
+        mask.cubicCurveTo(p1, p2, p3);
+    }
+    //Bottom
+    var bottomRightEdge = topRightEdge + new Point(0, tileWidth);
+    for (var i = 0; i < curvyCoords.length / 6; i++) {
+        var p1 = bottomRightEdge - new Point(curvyCoords[i * 6 + 0] * tileRatio,
+        bottomTab * curvyCoords[i * 6 + 1] * tileRatio);
+        var p2 = bottomRightEdge - new Point(curvyCoords[i * 6 + 2] * tileRatio,
+        bottomTab * curvyCoords[i * 6 + 3] * tileRatio);
+        var p3 = bottomRightEdge - new Point(curvyCoords[i * 6 + 4] * tileRatio,
+        bottomTab * curvyCoords[i * 6 + 5] * tileRatio);
+
+        mask.cubicCurveTo(p1, p2, p3);
+    }
+    //Left
+    var bottomLeftEdge = bottomRightEdge - new Point(tileWidth, 0);
+    for (var i = 0; i < curvyCoords.length / 6; i++) {
+        var p1 = bottomLeftEdge - new Point(-leftTab * curvyCoords[i * 6 + 1] * tileRatio,
+        curvyCoords[i * 6 + 0] * tileRatio);
+        var p2 = bottomLeftEdge - new Point(-leftTab * curvyCoords[i * 6 + 3] * tileRatio,
+        curvyCoords[i * 6 + 2] * tileRatio);
+        var p3 = bottomLeftEdge - new Point(-leftTab * curvyCoords[i * 6 + 5] * tileRatio,
+        curvyCoords[i * 6 + 4] * tileRatio);
+
+        mask.cubicCurveTo(p1, p2, p3);
+    }
+
+    return mask;
 }

@@ -234,3 +234,4 @@ function gameOver(){
     document.onmouseup = null;
     initPuzzle();
 }
+
